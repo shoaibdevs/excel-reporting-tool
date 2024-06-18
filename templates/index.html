@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Excel File</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 40px 60px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 0 auto 20px auto;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .messages .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .messages .message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .messages .message.info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .messages .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Excel File</h1>
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        <form action="{% url 'convert' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="file">Select Excel file:</label>
+            <input type="file" id="file" name="file" accept=".xlsx">
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+</body>
+</html>
