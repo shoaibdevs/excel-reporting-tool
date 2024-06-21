@@ -9,12 +9,16 @@ def convert(request):
         messages.info(request, "Conversion process has started.")
         try:
             # Read the Excel file into DataFrames
-            excel_file = request.FILES['file']
+            excel_file_1 = request.FILES['file1']
+            excel_file_2 = request.FILES['file2']
+            excel_file_3 = request.FILES['file3']
+            excel_file_4 = request.FILES['file4']
+
             
-            df1 = pd.read_excel(excel_file, sheet_name='Billing')
-            df2 = pd.read_excel(excel_file, sheet_name='Auto Indent')
-            df3 = pd.read_excel(excel_file, sheet_name='SPU')
-            df4 = pd.read_excel(excel_file, sheet_name='Service Order Closed with spare')
+            df1 = pd.read_excel(excel_file_1, sheet_name='Billing')
+            df2 = pd.read_excel(excel_file_2, sheet_name='Auto Indent')
+            df3 = pd.read_excel(excel_file_3, sheet_name='SPU')
+            df4 = pd.read_excel(excel_file_4, sheet_name='Service Order Closed with spare')
 
             # Define extraction functions
             def df1_sheet_extract(row):

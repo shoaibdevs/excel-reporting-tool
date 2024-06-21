@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Upload Excel File</title>
     <style>
         body {
@@ -97,8 +98,21 @@
         </div>
         <form action="{% url 'convert' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <label for="file">Select Excel file:</label>
-            <input type="file" id="file" name="file" accept=".xlsx">
+            <label for="file">Select Billing file:</label>
+            <input type="file" required id="file1" name="file" accept=".xlsx">
+
+            <hr/>
+            <label for="file">Select Auto Indent file:</label>
+            <input type="file" required id="file2" name="file" accept=".xlsx">
+            <hr/>
+
+            <label for="file">Select SPU file:</label>
+            <input type="file" required id="file3" name="file" accept=".xlsx">
+            <hr/>
+
+            <label for="file">Select Service Order Closed with spare file:</label>
+            <input type="file" required id="file4" name="file" accept=".xlsx">
+            
             <button type="submit">Upload</button>
         </form>
     </div>
