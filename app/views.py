@@ -139,18 +139,19 @@ def convert(request):
         f5['New Billing Doc'] = f5.apply(handle_billing_doc, axis=1)
 
         f5_selected = pd.DataFrame({
-            'Billing Document': f5['New Billing Doc'],
+            'Indent': f5['Indent'],
+            'Spare Sap Code': f5['Spare Sap Code'],
+            'Spare Part Description': f5['Spare Part Description'],
+            'SO Quantity': f5['SO Quantity'],
             'Ticket ID': f5['Ticket ID'],
             'Machine Status': f5['Machine Status'],
             'Product': f5['Product'],
             'Model': f5['Machine'],
             'Frcode': f5['Frcode'],
             'Franchise Name': f5['Franchise Name'],
-            'Indent': f5['Indent'],
-            'Spare Sap Code': f5['Spare Sap Code'],
-            'Spare Part Description': f5['Spare Part Description'],
-            'SO Quantity': f5['SO Quantity'],
+            'Billing Document': f5['New Billing Doc'],
             'Date': f5['CreatedDate'],
+
 
         })
         f5_selected.rename(columns={
@@ -159,7 +160,6 @@ def convert(request):
         }, inplace=True)
 
         f5 = f5.drop(columns=['Product', 'Frcode', 'Franchise Name', 'New Billing Doc', 'Indent', 'Spare Sap Code', 'Spare Part Description','SO Quantity', 'CreatedDate'])
-        f5_selected.dropna(subset=['Ticket ID'], inplace=True)
 
         # Create a BytesIO object to save the Excel file to memory
         output = BytesIO()
