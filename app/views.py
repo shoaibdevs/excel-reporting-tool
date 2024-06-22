@@ -5,7 +5,7 @@ from django.contrib import messages
 from io import BytesIO
 
 def convert(request):
-    if request.method == 'POST' and request.FILES.get('file1') and request.FILES.get('file2') and request.FILES.get('file3') and request.FILES.get('file4'):
+    if request.method == 'POST':
         messages.info(request, "Conversion process has started.")
         # Read the Excel file into DataFrames
         excel_file_1 = request.FILES['file1']
@@ -14,10 +14,10 @@ def convert(request):
         excel_file_4 = request.FILES['file4']
 
         
-        df1 = pd.read_excel(excel_file_1)
-        df2 = pd.read_excel(excel_file_2)
-        df3 = pd.read_excel(excel_file_3)
-        df4 = pd.read_excel(excel_file_4)
+        df1 = pd.read_excel(excel_file_1) # Billing
+        df2 = pd.read_excel(excel_file_2) # Auto
+        df3 = pd.read_excel(excel_file_3) # SPU
+        df4 = pd.read_excel(excel_file_4) # SCS
 
         # Define extraction functions
         def df1_sheet_extract(row):
@@ -62,7 +62,11 @@ def convert(request):
             'Machine Status',
             'Product',
             'Frcode',
-            'Franchise Name'
+            'Franchise Name',
+            'Indent',
+            'Spare Sap Code',
+            'Spare Part Description',
+            'SO Quantity', 'CreatedDate'
         ]], on="Link", how="left")
 
         def f3_sheet_extract(row):
@@ -88,6 +92,10 @@ def convert(request):
             'Ticket ID', 
             'Machine',  # Rename to Machine
             'Machine Status',
+            'Indent',
+            'Spare Sap Code',
+            'Spare Part Description',
+            'SO Quantity', 'CreatedDate'
         ]].merge(df3[[
             'Link2',
             'SPU NO',
@@ -112,7 +120,11 @@ def convert(request):
             'Machine Status',
             'Link2',
             'SPU NO',
-            'Credit Number under SPU',  # 'po ref no': 'Credit Number under SPU'
+            'Credit Number under SPU',  # 'po ref no': 'Credit Number under SPU'.
+            'Indent',
+            'Spare Sap Code',
+            'Spare Part Description',
+            'SO Quantity', 'CreatedDate'
         ]].merge(df4[[
             'Link2','CustomerName','Technician'
         ]], on="Link2", how="left")
@@ -127,20 +139,26 @@ def convert(request):
         f5['New Billing Doc'] = f5.apply(handle_billing_doc, axis=1)
 
         f5_selected = pd.DataFrame({
+            'Billing Document': f5['New Billing Doc'],
             'Ticket ID': f5['Ticket ID'],
             'Machine Status': f5['Machine Status'],
             'Product': f5['Product'],
             'Model': f5['Machine'],
             'Frcode': f5['Frcode'],
             'Franchise Name': f5['Franchise Name'],
-            'Billing Document': f5['New Billing Doc']
+            'Indent': f5['Indent'],
+            'Spare Sap Code': f5['Spare Sap Code'],
+            'Spare Part Description': f5['Spare Part Description'],
+            'SO Quantity': f5['SO Quantity'],
+            'Date': f5['CreatedDate'],
+
         })
         f5_selected.rename(columns={
             'Machine': 'Model',
             'New Billing Doc': 'Billing Document'
         }, inplace=True)
 
-        f5 = f5.drop(columns=['Product', 'Frcode', 'Franchise Name', 'New Billing Doc'])
+        f5 = f5.drop(columns=['Product', 'Frcode', 'Franchise Name', 'New Billing Doc', 'Indent', 'Spare Sap Code', 'Spare Part Description','SO Quantity', 'CreatedDate'])
         f5_selected.dropna(subset=['Ticket ID'], inplace=True)
 
         # Create a BytesIO object to save the Excel file to memory
