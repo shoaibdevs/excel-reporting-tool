@@ -167,7 +167,7 @@ def convert(request):
             'New Billing Doc': 'Billing Document'
         }, inplace=True)
 
-        f5 = f5.drop(columns=['Product', 'Frcode', 'Franchise Name', 'New Billing Doc', 'Indent', 'Spare Sap Code', 'Spare Part Description','SO Quantity', 'CreatedDate'])
+        f5 = f5.drop(columns=['Product', 'Frcode', 'Franchise Name', 'New Billing Doc', 'Indent', 'Spare Sap Code', 'Spare Part Description','SO Quantity', 'CreatedDate', 'Link2'])
 
         # Create a BytesIO object to save the Excel file to memory
         output = BytesIO()
