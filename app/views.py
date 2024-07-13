@@ -21,9 +21,16 @@ def convert(request):
 
         # Define extraction functions
         def df1_sheet_extract(row):
-            link = str(row['Sales Document']) + str(row['Material'])
-            return link.replace('.', '')
+            # Check for NaN in 'Sales Document' and 'Material'
+            if pd.isna(row['Sales Document']) or pd.isna(row['Material']):
+                return 'None'
 
+            # Convert 'Sales Document' to int and concatenate with 'Material'
+            link = int(row['Sales Document'])
+            link = str(link) + str(row['Material'])
+
+            # Remove any periods from the string
+            return link.replace('.', '')
         def df2_sheet_extract(row):
             indent = str(row['Indent'])  # Remove leading zeros
             link = indent + str(row['Spare Sap Code'])
@@ -46,6 +53,7 @@ def convert(request):
         df2['Link'] = df2.apply(df2_sheet_extract, axis=1)
         df3['Link2'] = df3.apply(df3_sheet_extract, axis=1)
         df4['Link2'] = df4.apply(df4_sheet_extract, axis=1)
+
 
         # Merging DataFrames
         f3 = df1[[
@@ -169,14 +177,31 @@ def convert(request):
 
             workbook = writer.book
             worksheet = writer.sheets['Output 1']
-            for i, col in enumerate(f5.columns):
-                column_len = max(f5[col].astype(str).map(len).max(), len(col))
-                worksheet.set_column(i, i, column_len)
-
             worksheet2 = writer.sheets['Pending Call']
+
+            header_format = workbook.add_format({
+                'bold': True,
+                'text_wrap': False,
+                'valign': 'top',
+                'fg_color': '#6699cb',  # Light blue color
+                'border': 1,  # Bold border
+                'align': 'left',  # Center align text
+                'font_color': '#FFFFFF'  # White font color,
+            })
+            cell_format = workbook.add_format({
+                'align': 'left',  # Left align text
+            })
+            # Format the first sheet (Output 1)
+            for i, col in enumerate(f5.columns):
+                column_len = max(f5[col].astype(str).map(len).max(), len(col)) + 1  # Adjust for border width
+                worksheet.set_column(i, i, column_len, cell_format)
+                worksheet.write(0, i, col, header_format)  # Apply the header format
+
+            # Format the second sheet (Pending Call)
             for i, col in enumerate(f5_selected.columns):
-                column_len = max(f5_selected[col].astype(str).map(len).max(), len(col))
-                worksheet2.set_column(i, i, column_len)
+                column_len = max(f5_selected[col].astype(str).map(len).max(), len(col)) + 1  # Adjust for border width
+                worksheet2.set_column(i, i, column_len, cell_format)
+                worksheet2.write(0, i, col, header_format)  # Apply the header format
 
         # Seek to the beginning of the stream
         output.seek(0)
