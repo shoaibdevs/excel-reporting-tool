@@ -16,8 +16,8 @@ def convert(request):
         
         df1 = pd.read_excel(excel_file_1) # Billing
         df2 = pd.read_excel(excel_file_2) # Auto
-        df3 = pd.read_excel(excel_file_3) # SPU
-        df4 = pd.read_excel(excel_file_4) # SCS
+        df3 = pd.read_excel(excel_file_3, header=2) # SPU
+        df4 = pd.read_excel(excel_file_4, header=2) # SCS
 
         # Define extraction functions
         def df1_sheet_extract(row):
