@@ -18,16 +18,6 @@ def convert(request):
         df2 = pd.read_excel(excel_file_2) # Auto
         df3 = pd.read_excel(excel_file_3) # SPU
         df4 = pd.read_excel(excel_file_4) # SCS
-        print(df3.columns)
-
-        # Strip any leading/trailing spaces from column names
-        df3.columns = df3.columns.str.strip()
-
-        # Check if 'Ticket' column exists
-        if 'Ticket' in df3.columns:
-            df3['Link2'] = df3.apply(df3_sheet_extract, axis=1)
-        else:
-            print("Column 'Ticket' is missing in the DataFrame.")
 
         # Define extraction functions
         def df1_sheet_extract(row):
@@ -47,10 +37,9 @@ def convert(request):
             return link
 
         def df3_sheet_extract(row):
-            ticket = int(row['Ticket'])
+            ticket = str(row['Ticket'])
             item_code = str(row['Item Code'])
-            link = str(ticket) + item_code
-            print(link)
+            link = ticket + item_code
             return link
 
         def df4_sheet_extract(row):
