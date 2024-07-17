@@ -6,6 +6,7 @@ from io import BytesIO
 
 def convert(request):
     if request.method == 'POST':
+        print("Post request recived")
         messages.info(request, "Conversion process has started.")
         # Read the Excel file into DataFrames
         excel_file_1 = request.FILES['file1']
@@ -19,6 +20,15 @@ def convert(request):
         df3 = pd.read_excel(excel_file_3) # SPU
         df4 = pd.read_excel(excel_file_4) # SCS
 
+        # Check if "ticket no" is in the first row (header)
+        if 'Ticket No' in df4.iloc[0].values:
+            print("SCS header 1")
+            # If header contains "ticket no", read the file again with header
+            df4 = pd.read_excel(excel_file_4)
+        else:
+            print("SCS header 2")
+            # Otherwise, continue with the dataframe read without header
+            df4 = pd.read_excel(excel_file_4, header=2)
         # Define extraction functions
         def df1_sheet_extract(row):
             # Check for NaN in 'Sales Document' and 'Material'
@@ -56,15 +66,7 @@ def convert(request):
 
 
         # Merging DataFrames
-        f3 = df1[[
-            'Purchase order number', 'Billing Date', 'Billing Document', 'Link',
-            'Party Name',  # Rename to Party Code
-            'Material',
-            'Material Description',
-            'Billed Quantity',
-            'Gross Value before TP/Wrty Support',
-            'Sales Document',
-        ]].merge(df2[[
+        f3 = df2[[
             'Link', 'Ticket ID', 
             'Model',  # Rename to Machine
             'Machine Status',
@@ -75,6 +77,14 @@ def convert(request):
             'Spare Sap Code',
             'Spare Part Description',
             'SO Quantity', 'CreatedDate'
+        ]].merge(df1[[
+            'Purchase order number', 'Billing Date', 'Billing Document', 'Link',
+            'Party Name',  # Rename to Party Code
+            'Material',
+            'Material Description',
+            'Billed Quantity',
+            'Gross Value before TP/Wrty Support',
+            'Sales Document',
         ]], on="Link", how="left")
 
         def f3_sheet_extract(row):
@@ -103,7 +113,8 @@ def convert(request):
             'Indent',
             'Spare Sap Code',
             'Spare Part Description',
-            'SO Quantity', 'CreatedDate'
+            'SO Quantity', 'CreatedDate',
+            'Link'
         ]].merge(df3[[
             'Link2',
             'SPU NO',
@@ -126,6 +137,7 @@ def convert(request):
             'Ticket ID', 
             'Machine',  # Rename to Machine
             'Machine Status',
+            'Link',
             'Link2',
             'SPU NO',
             'Credit Number under SPU',  # 'po ref no': 'Credit Number under SPU'.
@@ -159,16 +171,24 @@ def convert(request):
             'Franchise Name': f5['Franchise Name'],
             'Billing Document': f5['New Billing Doc'],
             'Date': f5['CreatedDate'],
-
-
+            'Link' : f5['Link'] 
         })
+        # Merge df1 and f5_selected on the 'Link' column with a left join to keep all rows in f5_selected
+        merged_df = pd.merge(f5_selected, df1[['Link']], on='Link', how='left', indicator=True)
+
+        # Update the 'Billing Document' column to 'Not Found' where the link is not in df1
+        f5_selected['Billing Document'] = merged_df.apply(
+            lambda row: 'Not Found' if row['_merge'] == 'left_only' or row['SO Quantity'] == 0 or row['SO Quantity'] ==  '0.000' or row['SO Quantity'] ==  0.000 else row['Billing Document'],
+            axis=1
+        )
+
         f5_selected.rename(columns={
             'Machine': 'Model',
             'New Billing Doc': 'Billing Document'
         }, inplace=True)
 
-        f5 = f5.drop(columns=['Product', 'Frcode', 'Franchise Name', 'New Billing Doc', 'Indent', 'Spare Sap Code', 'Spare Part Description','SO Quantity', 'CreatedDate', 'Link2'])
-
+        f5 = f5.drop(columns=['Product', 'Frcode', 'Franchise Name', 'New Billing Doc', 'Indent', 'Spare Sap Code', 'Spare Part Description','SO Quantity', 'CreatedDate', 'Link2', 'Link'])
+        f5_selected = f5_selected.drop(columns=['Link'])
         # Create a BytesIO object to save the Excel file to memory
         output = BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
@@ -191,6 +211,7 @@ def convert(request):
             cell_format = workbook.add_format({
                 'align': 'left',  # Left align text
             })
+            
             # Format the first sheet (Output 1)
             for i, col in enumerate(f5.columns):
                 column_len = max(f5[col].astype(str).map(len).max(), len(col)) + 1  # Adjust for border width
