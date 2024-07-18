@@ -19,15 +19,11 @@ def convert(request):
         df2 = pd.read_excel(excel_file_2) # Auto
         df3 = pd.read_excel(excel_file_3) # SPU
         df4 = pd.read_excel(excel_file_4) # SCS
-
         # Check if "ticket no" is in the first row (header)
-        if 'Ticket No' in df4.iloc[0].values:
+        if 'Ticket No' in df4.columns.values.tolist():
             print("SCS header 1")
-            # If header contains "ticket no", read the file again with header
-            df4 = pd.read_excel(excel_file_4)
         else:
             print("SCS header 2")
-            # Otherwise, continue with the dataframe read without header
             df4 = pd.read_excel(excel_file_4, header=2)
         # Define extraction functions
         def df1_sheet_extract(row):
