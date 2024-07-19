@@ -230,6 +230,5 @@ def convert(request):
         messages.success(request, "Conversion process completed successfully.")
         return response
 
-        return render(request, 'index.html')
 
     return render(request, 'index.html')
