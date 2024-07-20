@@ -211,8 +211,8 @@ def convert(request):
             f5_selected.to_excel(writer, sheet_name='Auto indent execution', index=False)
 
             workbook = writer.book
-            worksheet = writer.sheets['Output 1']
-            worksheet2 = writer.sheets['Pending Call']
+            worksheet = writer.sheets['Billing vs Ticket Numbers']
+            worksheet2 = writer.sheets['Auto indent execution']
 
             header_format = workbook.add_format({
                 'bold': True,
