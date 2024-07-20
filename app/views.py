@@ -207,8 +207,8 @@ def convert(request):
         # Create a BytesIO object to save the Excel file to memory
         output = BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            f5.to_excel(writer, index=False, sheet_name='Output billing against ticket numbers')
-            f5_selected.to_excel(writer, sheet_name='Pending call. Auto indent execution', index=False)
+            f5.to_excel(writer, index=False, sheet_name='Billing vs Ticket Numbers')
+            f5_selected.to_excel(writer, sheet_name='Auto indent execution', index=False)
 
             workbook = writer.book
             worksheet = writer.sheets['Output 1']
