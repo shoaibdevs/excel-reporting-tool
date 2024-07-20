@@ -62,7 +62,27 @@ def convert(request):
 
 
         # Merging DataFrames
-        f3 = df2[[
+        f3 = df1[[
+            'Purchase order number', 'Billing Date', 'Billing Document', 'Link',
+            'Party Name',  # Rename to Party Code
+            'Material',
+            'Material Description',
+            'Billed Quantity',
+            'Gross Value before TP/Wrty Support',
+            'Sales Document',
+        ]].merge(df2[[
+            'Link', 'Ticket ID', 
+            'Model',  # Rename to Machine
+            'Machine Status',
+            'Product',
+            'Frcode',
+            'Franchise Name',
+            'Indent',
+            'Spare Sap Code',
+            'Spare Part Description',
+            'SO Quantity', 'CreatedDate'
+        ]], on="Link", how="left")
+        newDf =  df2[[
             'Link', 'Ticket ID', 
             'Model',  # Rename to Machine
             'Machine Status',
@@ -82,7 +102,6 @@ def convert(request):
             'Gross Value before TP/Wrty Support',
             'Sales Document',
         ]], on="Link", how="left")
-
         def f3_sheet_extract(row):
             ticket = str(row['Ticket ID']).replace('.0', '')
             item_code = str(row['Material'])
@@ -155,19 +174,19 @@ def convert(request):
         f5['New Billing Doc'] = f5.apply(handle_billing_doc, axis=1)
 
         f5_selected = pd.DataFrame({
-            'Indent': f5['Indent'],
-            'Spare Sap Code': f5['Spare Sap Code'],
-            'Spare Part Description': f5['Spare Part Description'],
-            'SO Quantity': f5['SO Quantity'],
-            'Ticket ID': f5['Ticket ID'],
-            'Machine Status': f5['Machine Status'],
-            'Product': f5['Product'],
-            'Model': f5['Machine'],
-            'Frcode': f5['Frcode'],
-            'Franchise Name': f5['Franchise Name'],
-            'Billing Document': f5['New Billing Doc'],
-            'Date': f5['CreatedDate'],
-            'Link' : f5['Link'] 
+            'Indent': newDf['Indent'],
+            'Spare Sap Code': newDf['Spare Sap Code'],
+            'Spare Part Description': newDf['Spare Part Description'],
+            'SO Quantity': newDf['SO Quantity'],
+            'Ticket ID': newDf['Ticket ID'],
+            'Machine Status': newDf['Machine Status'],
+            'Product': newDf['Product'],
+            'Model': newDf['Model'],
+            'Frcode': newDf['Frcode'],
+            'Franchise Name': newDf['Franchise Name'],
+            'Billing Document': newDf['Billing Document'],
+            'Date': newDf['CreatedDate'],
+            'Link' : newDf['Link'] 
         })
         # Merge df1 and f5_selected on the 'Link' column with a left join to keep all rows in f5_selected
         merged_df = pd.merge(f5_selected, df1[['Link']], on='Link', how='left', indicator=True)
@@ -188,8 +207,8 @@ def convert(request):
         # Create a BytesIO object to save the Excel file to memory
         output = BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            f5.to_excel(writer, index=False, sheet_name='Output 1')
-            f5_selected.to_excel(writer, sheet_name='Pending Call', index=False)
+            f5.to_excel(writer, index=False, sheet_name='Output billing against ticket numbers')
+            f5_selected.to_excel(writer, sheet_name='Pending call. Auto indent execution', index=False)
 
             workbook = writer.book
             worksheet = writer.sheets['Output 1']
